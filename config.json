@@ -1,0 +1,14 @@
+{
+    "spotify":
+    {
+        "username": "mattdurrant",
+        "playlistId": "5noq8iSiMjSLH2e9t11NOv",
+        "api":
+        {
+            "clientId": "096503e03c684c859936847779ef6aa9",
+            "clientSecret": "<SECRET>"
+        }
+    },
+    "minimumTrackLength": 7,
+    "albumsInList" : 50
+}

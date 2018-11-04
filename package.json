@@ -1,0 +1,15 @@
+{
+  "name": "favourite-albums",
+  "version": "1.0.0",
+  "description": "Lists your favourite albums based on Spotify likes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matt Durrant",
+  "license": "ISC",
+  "dependencies": {
+    "ora": "^3.0.0",
+    "spotify-web-api-node": "^3.1.1"
+  }
+}
