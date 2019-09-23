@@ -9,6 +9,8 @@
   "author": "Matt Durrant",
   "license": "ISC",
   "dependencies": {
+    "basic-ftp": "^4.0.1",
+    "node-schedule": "^1.3.2",
     "ora": "^3.0.0",
     "spotify-web-api-node": "^3.1.1"
   }
