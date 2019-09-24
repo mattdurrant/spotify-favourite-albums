@@ -24,12 +24,13 @@ function buildHtml(albums) {
     header += `<script>$(document).ready( function () { $('#results').DataTable({ paging: false, "columns": [{ "orderable": false }, null, null ] }); } );</script>`
 
     let body = `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums</h1></header>`
+    body += `<p>My favourite 100 albums determined by my Spotify account <a href="https://github.com/mattdurrant/spotify-favourite-albums">(source code)</a>.</p>`
     body += `<table id="results" border="1"><thead></th><th></th><th>Album</th><th>Position</th></tr></thead><tbody>`
     
     for (let i = 0; i < albums.length; i++) {
         body += `<tr>`
-        body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}"><img src="${albums[i].albumArtUrl}"></img></a></td>`
-        body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}">${albums[i].albumName}</a><br>${albums[i].artistName}</td>`
+        body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}"><img width="100px" height="100px" src="${albums[i].albumArtUrl}"></img></a></td>`
+        body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}">${albums[i].albumName}</a><br>${albums[i].artistName}<br>${albums[i].albumYear}</td>`
         body += `<td class="normal" style="vertical-align:top"><b>${i + 1}</b></td>`
         body += `</tr>`
     }

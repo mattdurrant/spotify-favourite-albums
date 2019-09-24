@@ -28,10 +28,11 @@ async function getAlbums() {
              albumId: track.albumId,
              tracks: [], totalTracks: track.totalTracks, 
              percentage: null, 
-             albumName: track.albumName, 
+             albumName: track.albumName.replace(/ *\([^)]*\) */g, ""), 
              artistName: track.artistName,
              albumUrl: track.albumUrl,
-             albumArtUrl: track.albumArtUrl
+             albumArtUrl: track.albumArtUrl,
+             albumYear: track.albumReleaseDate.split('-')[0]
           })
       }
 
@@ -91,17 +92,17 @@ async function getPlaylistTracks(offset, pageSize) {
       fields:   'items'
     })
   
-  //console.log(data.body.items[0].track.album.href)
   return data.body.items.map(x => 
   ({
-    trackName:    x.track.name,
-    albumName:    x.track.album.name,
-    albumId:      x.track.album.id,
-    trackNumber : x.track.track_number,
-    totalTracks:  x.track.album.total_tracks,
-    artistName:   (x.track.album.artists.length > 0) ? x.track.album.artists[0].name : 'Unknown',
-    albumArtUrl:  x.track.album.images[0] ? x.track.album.images[0].url : null,
-    albumUrl:     x.track.album.external_urls.spotify
+    trackName:        x.track.name,
+    albumName:        x.track.album.name,
+    albumId:          x.track.album.id,
+    trackNumber :     x.track.track_number,
+    totalTracks:      x.track.album.total_tracks,
+    artistName:       (x.track.album.artists.length > 0) ? x.track.album.artists[0].name : 'Unknown',
+    albumArtUrl:      x.track.album.images[0] ? x.track.album.images[0].url : null,
+    albumUrl:         x.track.album.external_urls.spotify,
+    albumReleaseDate: x.track.album.release_date
   }))
 }
 
