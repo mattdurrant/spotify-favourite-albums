@@ -11,7 +11,7 @@ async function getAlbums() {
   await setSpotifyCredentials()
   
   let playlistData = await getPlaylist(config.spotify.playlistId),
-    results   = [], 
+    albums    = [], 
     pageSize  = 100,
     spinner   = ora(`Loading playlist ${playlistData.name}`).start()
 
@@ -22,11 +22,13 @@ async function getAlbums() {
     for (let track of tracks) {
       if (track.albumId === null) continue
       
-      if (results.findIndex(r => r.albumId === track.albumId) === -1) {
-        results.push(
+      if (albums.findIndex(r => r.albumId === track.albumId) === -1) {
+        albums.push(
           { 
              albumId: track.albumId,
-             tracks: [], totalTracks: track.totalTracks, 
+             tracks: [], 
+             tracksStatus: [],
+             totalTracks: track.totalTracks, 
              percentage: null, 
              albumName: track.albumName.replace(/ *\([^)]*\) */g, ""), 
              artistName: track.artistName,
@@ -36,32 +38,42 @@ async function getAlbums() {
           })
       }
 
-      let index = results.findIndex(r => r.albumId === track.albumId)
-      if(results[index].tracks.indexOf(track.trackNumber) === -1)
+      let index = albums.findIndex(r => r.albumId === track.albumId)
+      if(albums[index].tracks.indexOf(track.trackNumber) === -1)
       {
-        results[index].tracks.push(track.trackNumber)
-        results[index].tracks = results[index].tracks.sort((a, b) => a - b)
-        results[index].percentage = (results[index].tracks.length / track.totalTracks) * 100
+        albums[index].tracks.push(track.trackNumber)
+        albums[index].tracks = albums[index].tracks.sort((a, b) => a - b)
+        albums[index].percentage = (albums[index].tracks.length / track.totalTracks) * 100
       }
     }
   }
   spinner.succeed(`${playlistData.totalTracks} tracks for '${playlistData.name}' loaded.`)
 
-  return await processResults(results)
+  return await processResults(albums)
 }
 
-async function processResults(results) {
-  results = results.filter(r => r.totalTracks >= config.minimumTrackLength).sort(
+async function processResults(albums) {
+  albums = await albums.filter(r => r.totalTracks >= config.minimumTrackLength).sort(
     function(a, b) {
       if (a.percentage !== b.percentage) 
          return b.percentage - a.percentage
       return b.tracks.length - a.tracks.length
     }).slice(0, config.albumsInList)
 
-  return results
-  for (let i = 0; i < results.length; i++) {
-    console.log(`(${i+1}) \t ${results[i].albumName} - ${results[i].artistName} (${results[i].tracks.length} out of ${results[i].totalTracks} - ${results[i].percentage.toFixed(2)}%)`)
-  }
+  // Add list of liked and non-liked tracks for each album
+  for (let album of albums) {
+    let albumTracks = await spotifyApi.getAlbumTracks(album.albumId)
+    
+    for (let albumTrack of albumTracks.body.items) {
+      album.tracksStatus.push({ 
+        track: albumTrack.track_number, 
+        name: albumTrack.name,
+        href: albumTrack.external_urls.spotify,
+        liked: album.tracks.indexOf(albumTrack.track_number) > -1})
+    }
+  } 
+
+  return albums
 }
 
 async function setSpotifyCredentials() {
