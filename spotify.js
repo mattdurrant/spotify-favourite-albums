@@ -1,6 +1,8 @@
 const config        = require('./config.json')
 const SpotifyWebApi = require('spotify-web-api-node')
 const ora           = require('ora')
+const Filter        = require('bad-words'), filter = new Filter()
+filter.removeWords('god', 'bastard', 'hell', 'damn', 'sex', 'whore')
 
 let spotifyApi = new SpotifyWebApi({
     clientId:         config.spotify.api.clientId,
@@ -67,7 +69,7 @@ async function processResults(albums) {
     for (let albumTrack of albumTracks.body.items) {
       album.tracksStatus.push({ 
         track: albumTrack.track_number, 
-        name: albumTrack.name,
+        name: filter.clean(albumTrack.name),
         href: albumTrack.external_urls.spotify,
         liked: album.tracks.indexOf(albumTrack.track_number) > -1})
     }

@@ -9,6 +9,7 @@
   "author": "Matt Durrant",
   "license": "ISC",
   "dependencies": {
+    "bad-words": "^3.0.3",
     "basic-ftp": "^4.0.1",
     "moment": "^2.24.0",
     "node-schedule": "^1.3.2",
