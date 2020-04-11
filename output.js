@@ -30,15 +30,19 @@ function buildHtml(albums) {
     body += `<table id="results" border="1"><tr><th>Position</th><th>Album</th><th>Tracks</th></tr><tbody>`
     
     for (let i = 0; i < albums.length; i++) {
-        body += `<tr><td class="normal" style="vertical-align:top"><b>${i + 1}</b></td>`
+        body += `<tr><td class="normal" style="vertical-align:top"><b>${i + 1}.</b> <br/>${Math.round(albums[i].percentage)} / 100</td>`
         body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}">${albums[i].albumName}</a><br>${albums[i].artistName}<br>${albums[i].albumYear}<br><a href="${albums[i].albumUrl}"><img width="100%" src="${albums[i].albumArtUrl}"></img></a></td>`
         body += `<td>`
 
         for (let trackStatus of albums[i].tracksStatus)
         {
-            if (trackStatus.liked) {
+            if (trackStatus.score == 1) {
+                body += `<a href="${trackStatus.href}">${trackStatus.track}. ${trackStatus.name} 👑</br>`
+            } 
+            else if (trackStatus.score > 0) {
                 body += `<a href="${trackStatus.href}">${trackStatus.track}. ${trackStatus.name}</br>`
-            } else {
+            }
+            else {
                 body += `<a style="color: DarkGrey;" href="${trackStatus.href}">${trackStatus.track}. ${trackStatus.name}</br>`
             }
         }

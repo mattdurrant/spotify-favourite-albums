@@ -12,7 +12,7 @@ async function start() {
 }
 
 async function getFavouriteAlbums() {
-  let albums = await spotify.getAlbums()
+  let albums = await spotify.getFavouriteAlbums()
   
   if (albums === null)
     return
