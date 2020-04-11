@@ -22,17 +22,16 @@ function buildHtml(albums) {
     header += `<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>`
     header += `<link rel='stylesheet' href='https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css' type='text/css' media='all' />`
     header += `<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>`
-    header += `<script>$(document).ready( function () { $('#results').DataTable({ paging: false, "columns": [{ "orderable": false }, null, null ] }); } );</script>`
+    // header += `<script>$(document).ready( function () { $('#results').DataTable({ paging: false, "columns": [{ "orderable": false }, null, null ] }); } );</script>`
 
     let body = `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums</h1></header>`
     body += `<p>My favourite 100 albums determined by my Spotify account <a href="https://github.com/mattdurrant/spotify-favourite-albums">(source code)</a>.</p>`
     body += `<p>Last Updated: ${moment().format("dddd, MMMM Do YYYY, h:mm:ss a")}</p>`
-    body += `<table id="results" border="1"><thead></th><th></th><th>Album</th><th>Tracks</th><th>Position</th></tr></thead><tbody>`
+    body += `<table id="results" border="1"><tr><th>Position</th><th>Album</th><th>Tracks</th></tr><tbody>`
     
     for (let i = 0; i < albums.length; i++) {
-        body += `<tr>`
-        body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}"><img width="100px" height="100px" src="${albums[i].albumArtUrl}"></img></a></td>`
-        body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}">${albums[i].albumName}</a><br>${albums[i].artistName}<br>${albums[i].albumYear}</td>`
+        body += `<tr><td class="normal" style="vertical-align:top"><b>${i + 1}</b></td>`
+        body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}">${albums[i].albumName}</a><br>${albums[i].artistName}<br>${albums[i].albumYear}<br><a href="${albums[i].albumUrl}"><img width="100%" src="${albums[i].albumArtUrl}"></img></a></td>`
         body += `<td>`
 
         for (let trackStatus of albums[i].tracksStatus)
@@ -44,9 +43,7 @@ function buildHtml(albums) {
             }
         }
         
-        body += `</td>`
-        body += `<td class="normal" style="vertical-align:top"><b>${i + 1}</b></td>`
-        body += `</tr>`
+        body += `</td></tr>`
     }
     body += `</tbody></table></div></div>`
 

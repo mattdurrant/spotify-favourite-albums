@@ -19,4 +19,5 @@ async function getFavouriteAlbums() {
 
   let htmlFile = await output.writeToHtml(albums)
   await uploader.upload(htmlFile)
+  process.exit()
 }

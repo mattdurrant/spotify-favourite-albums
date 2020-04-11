@@ -63,7 +63,11 @@ async function processResults(albums) {
     }).slice(0, config.albumsInList)
 
   // Add list of liked and non-liked tracks for each album
+  let spinner   = ora(`Loading tracklists`).start()
+
   for (let album of albums) {
+    spinner.text = `Loading tracklist for '${album.albumName}'.`
+    
     let albumTracks = await spotifyApi.getAlbumTracks(album.albumId)
     
     for (let albumTrack of albumTracks.body.items) {
@@ -74,6 +78,8 @@ async function processResults(albums) {
         liked: album.tracks.indexOf(albumTrack.track_number) > -1})
     }
   } 
+
+  spinner.succeed(`All tracklists loaded.`)
 
   return albums
 }
