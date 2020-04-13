@@ -20,6 +20,64 @@ async function getFavouriteAlbums() {
   return albums
 }
 
+async function setSpotifyCredentials() {
+  await spotifyApi
+    .clientCredentialsGrant()
+    .then(function(data) {
+      spotifyApi.setAccessToken(data.body['access_token'])
+    })  
+}
+
+async function getPlaylistTracks(playlistId, score) {
+  let playlistMetadata = await getPlaylistMetadata(playlistId),
+      tracks    = [], 
+      pageSize  = 100,
+      spinner   = ora(`Loading playlist ${playlistMetadata.name}`).start()
+  
+  for(let offset = 0; offset < playlistMetadata.totalTracks; offset += pageSize) {
+    spinner.text = `Loading tracks ${offset}-${Math.min(offset + pageSize, playlistMetadata.totalTracks)} of ${playlistMetadata.totalTracks} for '${playlistMetadata.name}'.`
+    let playlistTracksPage = await getPlaylistTracksPage(playlistId, offset, pageSize, score)
+    tracks = tracks.concat(playlistTracksPage)
+  }
+
+  spinner.succeed(`${playlistMetadata.totalTracks} tracks for '${playlistMetadata.name}' loaded.`)
+  return tracks
+}
+
+async function getPlaylistMetadata(playlistId) {
+  let data = await spotifyApi.getPlaylist(config.spotify.username, playlistId)
+  return {
+    name:        data.body.name,
+    owner:       data.body.owner.display_name,
+    totalTracks: data.body.tracks.total,
+    description: data.body.description,
+    url:         data.body.external_urls.spotify
+  }
+}
+
+async function getPlaylistTracksPage(playlistId, offset, pageSize, score) {
+  let data = await spotifyApi
+    .getPlaylistTracks(config.spotify.username, playlistId, {
+      offset:   offset,
+      limit:    pageSize,
+      fields:   'items'
+    })
+
+  return data.body.items.map(x => 
+  ({
+    trackName:        x.track.name,
+    albumName:        x.track.album.name,
+    albumId:          x.track.album.id,
+    trackNumber :     x.track.track_number,
+    totalTracks:      x.track.album.total_tracks,
+    artistName:       (x.track.album.artists.length > 0) ? x.track.album.artists[0].name : 'Unknown',
+    albumArtUrl:      x.track.album.images[0] ? x.track.album.images[0].url : null,
+    albumUrl:         x.track.album.external_urls.spotify,
+    albumReleaseDate: x.track.album.release_date,
+    score:            score
+  }))
+}
+
 async function compileAlbums(tracks) {
   let albums = [],
     spinner = ora(`Compiling albums`).start()
@@ -46,20 +104,21 @@ async function compileAlbums(tracks) {
 
     let albumIndex = albums.findIndex(r => r.albumId === track.albumId)
     
-    if(albums[albumIndex].tracks.indexOf(track.trackNumber) === -1)
+    if (!albums[albumIndex].tracks.some(e => e.trackNumber === track.trackNumber))
     {
       albums[albumIndex].tracks.push({ trackNumber: track.trackNumber, score: track.score })
-      albums[albumIndex].tracks = albums[albumIndex].tracks.sort((a, b) => a.trackNumber - b.trackNumber)
     }
   }
 
   for(let album of albums) {
+    album.tracks = album.tracks.sort((a, b) => a.trackNumber - b.trackNumber)
+    
     let score = 0
     for(let track of album.tracks) {
-      score += (track.score * 1)
+      score += track.score
     }
 
-    let percentage = (score / (album.totalTracks) * 100)
+    let percentage = (score / album.totalTracks) * 100
     album.percentage = percentage
   }
 
@@ -100,64 +159,6 @@ async function getAlbumTracks(albums) {
 
   spinner.succeed(`All album tracklists loaded.`)
   return albums
-}
-
-async function setSpotifyCredentials() {
-  await spotifyApi
-    .clientCredentialsGrant()
-    .then(function(data) {
-      spotifyApi.setAccessToken(data.body['access_token'])
-    })  
-}
-
-async function getPlaylistMetadata(playlistId) {
-  let data = await spotifyApi.getPlaylist(config.spotify.username, playlistId)
-  return {
-    name:        data.body.name,
-    owner:       data.body.owner.display_name,
-    totalTracks: data.body.tracks.total,
-    description: data.body.description,
-    url:         data.body.external_urls.spotify
-  }
-}
-
-async function getPlaylistTracks(playlistId, score) {
-  let playlistMetadata = await getPlaylistMetadata(playlistId),
-      tracks    = [], 
-      pageSize  = 100,
-      spinner   = ora(`Loading playlist ${playlistMetadata.name}`).start()
-  
-  for(let offset = 0; offset < playlistMetadata.totalTracks; offset += pageSize) {
-    spinner.text = `Loading tracks ${offset}-${Math.min(offset + pageSize, playlistMetadata.totalTracks)} of ${playlistMetadata.totalTracks} for '${playlistMetadata.name}'.`
-    let playlistTracksPage = await getPlaylistTracksPage(playlistId, offset, pageSize, score)
-    tracks = tracks.concat(playlistTracksPage)
-  }
-
-  spinner.succeed(`${playlistMetadata.totalTracks} tracks for '${playlistMetadata.name}' loaded.`)
-  return tracks
-}
-
-async function getPlaylistTracksPage(playlistId, offset, pageSize, score) {
-  let data = await spotifyApi
-    .getPlaylistTracks(config.spotify.username, playlistId, {
-      offset:   offset,
-      limit:    pageSize,
-      fields:   'items'
-    })
-
-  return data.body.items.map(x => 
-  ({
-    trackName:        x.track.name,
-    albumName:        x.track.album.name,
-    albumId:          x.track.album.id,
-    trackNumber :     x.track.track_number,
-    totalTracks:      x.track.album.total_tracks,
-    artistName:       (x.track.album.artists.length > 0) ? x.track.album.artists[0].name : 'Unknown',
-    albumArtUrl:      x.track.album.images[0] ? x.track.album.images[0].url : null,
-    albumUrl:         x.track.album.external_urls.spotify,
-    albumReleaseDate: x.track.album.release_date,
-    score:            score
-  }))
 }
 
 module.exports = {
