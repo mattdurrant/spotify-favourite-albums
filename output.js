@@ -23,6 +23,7 @@ function buildHtml(albums) {
     header += `<link rel='stylesheet' href='https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css' type='text/css' media='all' />`
     header += `<link href="https://emoji-css.afeld.me/emoji.css" rel="stylesheet">`
     header += `<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>`
+    header += `<style> .circle { margin-top:50px; width:50px; height:50px; border-radius:25px; font-size:15px; color:#fff; line-height:50px; text-align:center; background:#57ad68; }</style>`
     // header += `<script>$(document).ready( function () { $('#results').DataTable({ paging: false, "columns": [{ "orderable": false }, null, null ] }); } );</script>`
 
     let body = `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums</h1></header>`
@@ -31,7 +32,7 @@ function buildHtml(albums) {
     body += `<table id="results" border="1"><tr><th>Position</th><th>Album</th><th>Tracks</th></tr><tbody>`
     
     for (let i = 0; i < albums.length; i++) {
-        body += `<tr><td class="normal" style="vertical-align:top"><b>${i + 1}.</b> <br/>${Math.round(albums[i].percentage)} / 100</td>`
+        body += `<tr><td class="normal" style="vertical-align:top"><b>${i + 1}.</b> <div class="circle">${Math.round(albums[i].percentage)}%</div>`
         body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}">${albums[i].albumName}</a><br>${albums[i].artistName}<br>${albums[i].albumYear}<br><a href="${albums[i].albumUrl}"><img width="100%" src="${albums[i].albumArtUrl}"></img></a></td>`
         body += `<td>`
 
