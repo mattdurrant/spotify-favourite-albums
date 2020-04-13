@@ -13,7 +13,7 @@ async function getFavouriteAlbums() {
   await setSpotifyCredentials()
   
   let tracks = await getPlaylistTracks(config.spotify.lovePlaylistId, 1)
-  tracks = tracks.concat(await getPlaylistTracks(config.spotify.likePlaylistId, 0.5))
+  tracks = tracks.concat(await getPlaylistTracks(config.spotify.likePlaylistId, 0.8))
   
   var albums = await compileAlbums(tracks)
   albums = await getAlbumTracks(albums)
