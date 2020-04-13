@@ -2,13 +2,24 @@
     "spotify":
     {
         "username": "mattdurrant",
-        "playlistId": "5noq8iSiMjSLH2e9t11NOv",
+        "likePlaylistId": "5noq8iSiMjSLH2e9t11NOv",
+        "lovePlaylistId": "3Rs7e9KMwxCJroMpvMDpL8",
         "api":
         {
             "clientId": "096503e03c684c859936847779ef6aa9",
-            "clientSecret": "<SECRET>"
+            "clientSecret": <SECRET>
         }
     },
     "minimumTrackLength": 7,
-    "albumsInList" : 50
+    "albumsInList" : 100,
+    "filename" : "albums.html",
+    "website":
+    {
+        "ftp":
+        {
+            "host": "ftp.mattdurrant.com",
+            "username": "mattdurrant.com",
+            "password": <PASSWORD>
+        }
+    }
 }
