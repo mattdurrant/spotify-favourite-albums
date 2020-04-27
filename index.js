@@ -1,6 +1,7 @@
 const spotify   = require('./spotify.js')
 const output    = require('./output.js')
 const uploader  = require('./uploader.js')
+const pitchfork = require('./pitchfork.js')
 const schedule  = require('node-schedule')
 
 ; (async () => {
@@ -16,7 +17,9 @@ async function getFavouriteAlbums() {
   
   if (albums === null)
     return
-
+  
+  //let albums = null
+  //albums = pitchfork.addReviews()
   let htmlFile = await output.writeToHtml(albums)
   await uploader.upload(htmlFile)
   process.exit()
