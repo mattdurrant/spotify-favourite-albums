@@ -4,7 +4,7 @@ const fs        = require("fs")
 const ora       = require('ora')
 const config    = require('./config.json')
 
-async function upload(fileName) {
+async function upload(fileName, filePath) {
     spinner   = ora(`Uploading ${fileName} via FTP.`).start()
   
     const client = new ftp.Client()
@@ -15,7 +15,7 @@ async function upload(fileName) {
             password: config.website.ftp.password,
         })
         await client.cd(`public_html`)
-        await client.upload(fs.createReadStream(fileName), fileName)
+        await client.upload(fs.createReadStream(filePath), fileName)
         spinner.succeed(`${fileName} uploaded.`)
     }
     catch(err) {

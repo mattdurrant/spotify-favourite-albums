@@ -2,19 +2,19 @@ const fs        = require('fs')
 const config    = require('./config.json')
 const moment    = require('moment')
 
-async function writeToHtml(albums) {
+async function writeToHtml(filter, albums) {
     let filename = config.filename
     let stream = fs.createWriteStream(filename)
 
     await stream.once('open', function(fd) {
-        let html = buildHtml(albums)
+        let html = buildHtml(filter, albums)
         stream.end(html)
     })
 
     return filename
 }
 
-function buildHtml(albums) {
+function buildHtml(filter, albums) {
     let header = `<link rel="stylesheet" type="text/css" href="http://www.mattdurrant.com/wp-content/themes/independent-publisher/style.css?ver=4.9.10">`
     header += `<link rel='stylesheet' id='genericons-css'  href='http://www.mattdurrant.com/wp-content/themes/independent-publisher/fonts/genericons/genericons.css?ver=3.1' type='text/css' media='all' />`
     header += `<link rel='stylesheet' id='customizer-css'  href='http://www.mattdurrant.com/wp-admin/admin-ajax.php?action=independent_publisher_customizer_css&#038;ver=1.7' type='text/css' media='all' />`
@@ -26,11 +26,22 @@ function buildHtml(albums) {
     header += `<style> .circle { margin-top:50px; width:50px; height:50px; border-radius:25px; font-size:15px; color:#fff; line-height:50px; text-align:center; background:#57ad68; }</style>`
     // header += `<script>$(document).ready( function () { $('#results').DataTable({ paging: false, "columns": [{ "orderable": false }, null, null ] }); } );</script>`
 
-    let body = `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums</h1></header>`
+    let body = ``
+    if (filter === ``) {
+        body +=  `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums</h1></header>`
+    } else {
+        body +=  `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums of ` + filter + `</h1></header>`
+    }
     body += `<p>My favourite 100 albums determined by my Spotify account <a href="https://github.com/mattdurrant/spotify-favourite-albums">(source code)</a>.</p>`
     body += `<p>Last Updated: ${moment().format("dddd, MMMM Do YYYY, h:mm:ss a")}</p>`
-    body += `<table id="results" border="1"><tr><th>Position</th><th>Album</th><th>Tracks</th></tr><tbody>`
+    body += `<p><a href="./albums.html">All Time</a>`
+    for (let year = 2000; year <= 2020; year++) {
+        body += ` || <a href="./albums`+ year + `.html">` + year + `</a>`
+    }
     
+    body += `</p><table id="results" border="1"><tr><th>Position</th><th>Album</th><th>Tracks</th></tr><tbody>`
+    
+
     for (let i = 0; i < albums.length; i++) {
         body += `<tr><td class="normal" style="vertical-align:top"><b>${i + 1}.</b> <div class="circle">${Math.round(albums[i].percentage)}%</div>`
         body += `<td class="normal" style="vertical-align:top"><a href="${albums[i].albumUrl}">${albums[i].albumName}</a><br>${albums[i].artistName}<br>${albums[i].albumYear}<br><a href="${albums[i].albumUrl}"><img width="100%" src="${albums[i].albumArtUrl}"></img></a></td>`

@@ -1,7 +1,7 @@
-const config        = require('./config.json')
-const SpotifyWebApi = require('spotify-web-api-node')
-const ora           = require('ora')
-const Filter        = require('bad-words'), filter = new Filter()
+const config          = require('./config.json')
+const SpotifyWebApi   = require('spotify-web-api-node')
+const ora             = require('ora')
+const Filter          = require('bad-words'), filter = new Filter()
 filter.removeWords('god', 'bastard', 'hell', 'damn', 'sex', 'whore')
 
 let spotifyApi = new SpotifyWebApi({
@@ -9,15 +9,15 @@ let spotifyApi = new SpotifyWebApi({
     clientSecret:     config.spotify.api.clientSecret
 })
 
-async function getFavouriteAlbums() {
+async function getFavouriteAlbums(filter) {
   await setSpotifyCredentials()
   
   let favouriteTracks = await getTracksFromPlaylist(config.spotify.lovePlaylistId, 1)
   favouriteTracks = favouriteTracks.concat(await getTracksFromPlaylist(config.spotify.likePlaylistId, 0.75))
   
   var albums = await groupTracksIntoAlbums(favouriteTracks)
-  albums = await boostLongAlbums(albums)
-  albums = await selectFavouriteAlbums(albums, config.albumsInList)
+  albums = await scoreAlbums(albums, 0.25)
+  albums = await filterAlbums(albums, filter, config.albumsInList)
   albums = await getAlbumTracks(albums)
   return albums
 }
@@ -85,36 +85,37 @@ async function groupTracksIntoAlbums(tracks) {
     spinner = ora(`Grouping tracks into albums`).start()
  
   for (let track of tracks) { 
-  if (track.albumId === null) 
-    continue
-  
-  if (albums.findIndex(r => r.albumId === track.albumId) === -1) {
-    albums.push(
-    { 
-        albumId: track.albumId,
-        tracks: [], 
-        tracksStatus: [],
-        percentage: 0,
-        totalTracks: track.totalTracks, 
-        albumName: track.albumName.replace(/ *\([^)]*\) */g, ""), 
-        artistName: track.artistName,
-        albumUrl: track.albumUrl,
-        albumArtUrl: track.albumArtUrl,
-        albumYear: track.albumReleaseDate.split('-')[0]
-    })
-  }
+    if (track.albumId === null) 
+      continue
+    
+    if (albums.findIndex(r => r.albumId === track.albumId) === -1) {
+      albums.push(
+      { 
+          albumId: track.albumId,
+          tracks: [], 
+          tracksStatus: [],
+          percentage: 0,
+          totalTracks: track.totalTracks, 
+          albumName: track.albumName.replace(/ *\([^)]*\) */g, ""), 
+          artistName: track.artistName,
+          albumUrl: track.albumUrl,
+          albumArtUrl: track.albumArtUrl,
+          albumYear: track.albumReleaseDate.split('-')[0]
+      })
+    }
 
-  let albumIndex = albums.findIndex(r => r.albumId === track.albumId)
-  
-  if (!albums[albumIndex].tracks.some(e => e.trackNumber === track.trackNumber)) {
-    albums[albumIndex].tracks.push({ trackNumber: track.trackNumber, score: track.score })
+    let albumIndex = albums.findIndex(r => r.albumId === track.albumId)
+    
+    if (!albums[albumIndex].tracks.some(e => e.trackNumber === track.trackNumber)) {
+      albums[albumIndex].tracks.push({ trackNumber: track.trackNumber, score: track.score })
+    }
   }
 
   spinner.succeed(`Tracks grouped into albums.`)
   return albums
 }
 
-async function scoreAlbums(albums, longAlbumBoost) {
+async function scoreAlbums(albums, longAlbumBoostScore) {
   let spinner = ora(`Boosting score of long albums`).start()
   for(let album of albums) {
     album.tracks = album.tracks.sort((a, b) => a.trackNumber - b.trackNumber)
@@ -131,13 +132,18 @@ async function scoreAlbums(albums, longAlbumBoost) {
     let percentage = (score / album.totalTracks) * 100
     album.percentage = percentage
   }
+
   spinner.succeed(`Album scores set.`)
   return albums
 }
 
-async function selectFavouriteAlbums(albums, numberOfAlbumsToSelect) {
-  let spinner = ora(`Compiling albums`).start()
+async function filterAlbums(albums, filter, numberOfAlbumsToSelect) {
+  let spinner = ora(`Filtering albums`).start()
   
+  if (filter !== '') {
+    albums = albums.filter(r => r.albumYear == filter)
+  }
+
   albums = await albums.filter(r => r.totalTracks >= config.minimumTrackLength).sort(
     function(a, b) {
       if (a.percentage !== b.percentage) 
@@ -162,6 +168,7 @@ async function getAlbumTracks(albums) {
       let foundTrack = album.tracks.find(obj => {
         return obj.trackNumber === albumTrack.track_number
       })
+
       let score = foundTrack ? foundTrack.score : 0
 
       album.tracksStatus.push({ 
