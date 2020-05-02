@@ -28,11 +28,11 @@ function buildHtml(filter, albums) {
 
     let body = ``
     if (filter === ``) {
-        body +=  `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums</h1></header>`
+        body +=  `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">` + albums.length + ` Favourite Albums</h1></header>`
     } else {
-        body +=  `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">100 Favourite Albums of ` + filter + `</h1></header>`
+        body +=  `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">` + albums.length + ` Favourite Albums of ` + filter + `</h1></header>`
     }
-    body += `<p>My favourite 100 albums determined by my Spotify account <a href="https://github.com/mattdurrant/spotify-favourite-albums">(source code)</a>.</p>`
+    body += `<p>My favourite albums as determined by my Spotify account <a href="https://github.com/mattdurrant/spotify-favourite-albums">(source code)</a>.</p>`
     body += `<p>Last Updated: ${moment().format("dddd, MMMM Do YYYY, h:mm:ss a")}</p>`
     body += `<p><a href="./albums.html">All Time</a>`
     for (let year = 2000; year <= 2020; year++) {
