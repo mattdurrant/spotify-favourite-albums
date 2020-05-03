@@ -2,7 +2,7 @@ const config          = require('./config.json')
 const SpotifyWebApi   = require('spotify-web-api-node')
 const ora             = require('ora')
 const Filter          = require('bad-words'), filter = new Filter()
-filter.removeWords('god', 'bastard', 'hell', 'damn', 'sex', 'whore')
+filter.removeWords('god', 'bastard', 'hell', 'damn', 'sex', 'whore', 'rape')
 
 let spotifyApi = new SpotifyWebApi({
     clientId:         config.spotify.api.clientId,
@@ -12,9 +12,10 @@ let spotifyApi = new SpotifyWebApi({
 async function getFavouriteAlbums(filter) {
   await setSpotifyCredentials()
   
-  let favouriteTracks = await getTracksFromPlaylist(config.spotify.lovePlaylistId, 1)
+  let favouriteTracks = await getTracksFromPlaylist(config.spotify.excludedPlaylistId, -1)
+  favouriteTracks = favouriteTracks.concat(await getTracksFromPlaylist(config.spotify.lovePlaylistId, 1))
   favouriteTracks = favouriteTracks.concat(await getTracksFromPlaylist(config.spotify.likePlaylistId, 0.75))
-  
+ 
   var albums = await groupTracksIntoAlbums(favouriteTracks)
   albums = await scoreAlbums(albums, 0.25)
   albums = await filterAlbums(albums, filter, config.albumsInList)
@@ -68,9 +69,10 @@ async function getTracksFromPlaylistPage(playlistId, offset, pageSize, score) {
   return data.body.items.map(x => 
   ({
     trackName:        x.track.name,
+    trackId:          x.track.id,
     albumName:        x.track.album.name,
     albumId:          x.track.album.id,
-    trackNumber :     x.track.track_number,
+    trackNumber:      x.track.track_number,
     totalTracks:      x.track.album.total_tracks,
     artistName:       (x.track.album.artists.length > 0) ? x.track.album.artists[0].name : 'Unknown',
     albumArtUrl:      x.track.album.images[0] ? x.track.album.images[0].url : null,
@@ -106,8 +108,8 @@ async function groupTracksIntoAlbums(tracks) {
 
     let albumIndex = albums.findIndex(r => r.albumId === track.albumId)
     
-    if (!albums[albumIndex].tracks.some(e => e.trackNumber === track.trackNumber)) {
-      albums[albumIndex].tracks.push({ trackNumber: track.trackNumber, score: track.score })
+    if (!albums[albumIndex].tracks.some(e => e.trackId === track.trackId)) {
+      albums[albumIndex].tracks.push({ trackId: track.trackId, trackNumber: track.trackNumber, score: track.score })
     }
   }
 
@@ -120,16 +122,24 @@ async function scoreAlbums(albums, longAlbumBoostScore) {
   for(let album of albums) {
     album.tracks = album.tracks.sort((a, b) => a.trackNumber - b.trackNumber)
     
+    if (album.albumUrl === 'https://open.spotify.com/album/6eGYLONkDMja0MNtZWnRRB') {
+      let a = 0
+    }
+
     let score = 0
     for(let track of album.tracks) {
+      if (track.score === -1)
+        continue
       score += track.score
     }
 
     // It's harder for albums with more tracks to get high scores. Give longer albums a boost.
-    let longAlbumBoost = (album.totalTracks >= 10) ? (((album.totalTracks - 10) / 3) + 1) * longAlbumBoostScore : 0
-    score = Math.min(score + longAlbumBoost, album.totalTracks)
+    let totalTracks = album.totalTracks - (album.tracks.filter(x => x.score === -1).length)
+    
+    let longAlbumBoost = (totalTracks >= 10) ? (((totalTracks - 10) / 3) + 1) * longAlbumBoostScore : 0
+    score = Math.min(score + longAlbumBoost, totalTracks)
 
-    let percentage = (score / album.totalTracks) * 100
+    let percentage = (score / totalTracks) * 100
     album.percentage = percentage
   }
 
@@ -166,7 +176,7 @@ async function getAlbumTracks(albums) {
     for (let albumTrack of albumTracks.body.items) {
       
       let foundTrack = album.tracks.find(obj => {
-        return obj.trackNumber === albumTrack.track_number
+        return obj.trackId === albumTrack.id
       })
 
       let score = foundTrack ? foundTrack.score : 0
