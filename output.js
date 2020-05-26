@@ -33,6 +33,8 @@ function buildHtml(filter, albums) {
         body +=  `<div id="page" class="site"><div class="entry-content e-content"><header class="entry-header"><h1 class="entry-title p-name">` + albums.length + ` Favourite Albums of ` + filter + `</h1></header>`
     }
     body += `<p>My favourite albums as determined by my Spotify account <a href="https://github.com/mattdurrant/spotify-favourite-albums">(source code)</a>.</p>`
+    // body += `<p>Key: <i class="em em-trophy" aria-role="presentation" aria-label="TROPHY"></i><span color: "#57ad68">Loved</span>, <span color: "#57ad68">Liked</span>, <span color: "Orange">OK</span></p>`
+    
     body += `<p>Last Updated: ${moment().format("dddd, MMMM Do YYYY, h:mm:ss a")}</p>`
     body += `<p><a href="./albums.html">All Time</a>`
     for (let year = 2000; year <= 2020; year++) {
@@ -52,8 +54,11 @@ function buildHtml(filter, albums) {
             if (trackStatus.score == 1) {
                 body += `<a href="${trackStatus.href}">${trackStatus.track}. ${trackStatus.name}<i class="em em-trophy" aria-role="presentation" aria-label="TROPHY"></i></br>`
             } 
-            else if (trackStatus.score > 0) {
+            else if (trackStatus.score == 0.75) {
                 body += `<a href="${trackStatus.href}">${trackStatus.track}. ${trackStatus.name}</br>`
+            }
+            else if (trackStatus.score == 0.5) {
+                body += `<a style="color: Orange;" href="${trackStatus.href}">${trackStatus.track}. ${trackStatus.name}</br>`
             }
             else {
                 body += `<a style="color: DarkGrey;" href="${trackStatus.href}">${trackStatus.track}. ${trackStatus.name}</br>`

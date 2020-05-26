@@ -15,6 +15,7 @@ async function getFavouriteAlbums(filter) {
   let favouriteTracks = await getTracksFromPlaylist(config.spotify.excludedPlaylistId, -1)
   favouriteTracks = favouriteTracks.concat(await getTracksFromPlaylist(config.spotify.lovePlaylistId, 1))
   favouriteTracks = favouriteTracks.concat(await getTracksFromPlaylist(config.spotify.likePlaylistId, 0.75))
+  favouriteTracks = favouriteTracks.concat(await getTracksFromPlaylist(config.spotify.averagePlaylistId, 0.5))
  
   var albums = await groupTracksIntoAlbums(favouriteTracks)
   albums = await scoreAlbums(albums, 0.25)
