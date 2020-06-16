@@ -12,7 +12,7 @@ async function start() {
 
 async function getFavouriteAlbums() {
   
-  let filter = getFilter()
+  let filter = ''// getFilter()
   console.log(`Getting favourite albums for ` + filter === '' ? 'all time' : filter)
   
   let albums = await spotify.getFavouriteAlbums(filter)
