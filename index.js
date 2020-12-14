@@ -1,6 +1,5 @@
-const spotify     = require('./spotify.js')
-const output      = require('./output.js')
-const uploader    = require('./uploader.js')
+const spotify         = require('./spotify.js')
+const albumRepository = require('./album-repository')
 
 ; (async () => {
   await start();
@@ -11,20 +10,25 @@ async function start() {
 }
 
 async function getFavouriteAlbums() {
-  
-  let filter = ''// getFilter()
-  console.log(`Getting favourite albums for ` + filter === '' ? 'all time' : filter)
-  
-  let albums = await spotify.getFavouriteAlbums(filter)
-  
-  if (albums === null)
-    return
-  
-  let htmlFile = await output.writeToHtml(filter, albums)
-  
-  let fileName = filter === '' ? 'albums.html' : 'albums' + filter + '.html'
-  await uploader.upload(fileName, htmlFile)
-  process.exit()
+  try {
+    let filter = '' //getFilter()
+    console.log(`Getting favourite albums for ` + filter === '' ? 'all time' : filter)
+    
+    let albums = await spotify.getFavouriteAlbums(filter)
+    
+    if (albums === null)
+      return
+    
+    for (let i = 0; i < albums.length; i++) {
+        await albumRepository.insert(albums[i])
+    }
+  }
+  catch(ex) {
+    console.log(ex)
+  }
+  finally {
+    process.exit()
+  }
 }
 
 function getFilter() {
