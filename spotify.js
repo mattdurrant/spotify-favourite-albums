@@ -9,6 +9,16 @@ let spotifyApi = new SpotifyWebApi({
     clientSecret:     config.spotify.api.clientSecret
 })
 
+async function getPurchasedAlbums() {
+  console.log('yes')
+  await setSpotifyCredentials()
+  
+  let purchasedTracks = await getTracksFromPlaylist(config.spotify.purchasedPlaylistId, -1)
+  
+  var albums = await groupTracksIntoAlbums(purchasedTracks)
+  return albums
+}
+
 async function getFavouriteAlbums(filter) {
   await setSpotifyCredentials()
   
@@ -196,5 +206,6 @@ async function getAlbumTracks(albums) {
 }
 
 module.exports = {
-  getFavouriteAlbums
+  getFavouriteAlbums,
+  getPurchasedAlbums
 }
