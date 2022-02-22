@@ -26,5 +26,6 @@ const pool = createPool();
 
 module.exports = {
   connection: async () => pool.getConnection(),
-  execute: (...params) => pool.execute(...params)
+  execute: (...params) => pool.execute(...params),
+  query: (...params) => pool.query(...params)
 };
